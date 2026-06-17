@@ -1,0 +1,3 @@
+identity,defect
+u_minus(t)+u_plus(t+T/2),1.4961460959028727e-09
+u_zero(t)+u_zero(t+T/2),8.505168791472784e-11

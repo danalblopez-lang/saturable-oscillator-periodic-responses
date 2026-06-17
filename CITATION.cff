@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite the archived release associated with the paper."
+title: "Numerical continuation and Floquet diagnostics for a forced saturable oscillator"
+type: software
+version: 2.0.0
+date-released: 2026-06-16
+license: MIT
+authors:
+  - family-names: "López"
+    given-names: "Daniel A."
+  - family-names: "Castro"
+    given-names: "Diego A."
+  - family-names: "Ramirez"
+    given-names: "C. A."
+repository-code: "https://github.com/danalblopez-lang/saturable-oscillator-periodic-responses"
+keywords:
+  - periodic solutions
+  - saturable oscillator
+  - numerical continuation
+  - shooting method
+  - Floquet multipliers
+  - finite differences
+  - nonlinear oscillations

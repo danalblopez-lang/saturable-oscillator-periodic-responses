@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "saturable-oscillator-numerics"
+version = "2.0.0"
+description = "Continuation, asymptotics, Floquet diagnostics, and finite-difference checks for a forced saturable oscillator"
+requires-python = ">=3.11"
+dependencies = [
+  "numpy>=2.0",
+  "scipy>=1.13",
+  "matplotlib>=3.8",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]

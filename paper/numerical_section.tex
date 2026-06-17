@@ -1,0 +1,488 @@
+%============================================================
+\section{Computational continuation and Floquet diagnostics}
+\label{sec:numerics}
+%============================================================
+
+This section examines the three local branches obtained in
+Sections~\ref{sec:local-continuation}--\ref{sec:stability-quantitative}
+by numerical continuation from the exact constant states at zero
+forcing. The computations are used to compare the periodic responses
+with the asymptotic expansions, to monitor their Floquet spectra, and
+to assess discretization sensitivity. They do not constitute a
+computer-assisted existence proof.
+
+All computations were performed in Python using \texttt{NumPy},
+\texttt{SciPy}, and \texttt{Matplotlib}; see
+\cite{VirtanenEtAl2020}. The initial-value problems were integrated with
+the explicit DOP853 Runge--Kutta method through
+\texttt{scipy.integrate.solve\_ivp}, with relative and absolute
+tolerances
+\[
+\texttt{rtol}=10^{-10},
+\qquad
+\texttt{atol}=10^{-12}.
+\]
+The implementation, input parameters, generated tables, and figures are
+provided in the companion repository
+\cite{LopezCastroRamirezCode2026}.
+
+%------------------------------------------------------------
+\subsection{Shooting and parameter continuation}
+\label{subsec:numerical-shooting}
+%------------------------------------------------------------
+
+For the harmonic problem
+\begin{equation}
+\label{eq:numerical-harmonic-problem}
+ u''+\delta u'+f_{\alpha}(u)=\beta\cos(\omega t),
+ \qquad
+ T=\frac{2\pi}{\omega},
+\end{equation}
+we write
+\[
+ x=(u,v)^{\mathsf T}
+\]
+and denote by
+\[
+ P_{\beta}(x_0)
+\]
+the time-$T$ map of the associated first-order system. A periodic
+solution corresponds to a zero of
+\begin{equation}
+\label{eq:numerical-shooting-residual}
+ G_{\beta}(x_0)
+ :=
+ P_{\beta}(x_0)-x_0.
+\end{equation}
+The derivative of the shooting residual is
+\begin{equation}
+\label{eq:numerical-shooting-jacobian}
+ D G_{\beta}(x_0)
+ =
+ M_{\beta}(x_0)-I_2,
+\end{equation}
+where $M_{\beta}(x_0)$ is obtained by integrating the variational
+equation simultaneously with the orbit. A damped Newton correction is
+then applied to \eqref{eq:numerical-shooting-residual}.
+
+At $\beta=0$, the three exact initial states are
+\begin{equation}
+\label{eq:numerical-initial-states}
+ x_-^{0}=(-\sqrt{\alpha^2-1},0),
+ \qquad
+ x_0^{0}=(0,0),
+ \qquad
+ x_+^{0}=(\sqrt{\alpha^2-1},0).
+\end{equation}
+Starting from these states, each branch is continued on a uniform
+parameter grid
+\[
+ \beta_n=n\,\Delta\beta,
+ \qquad
+ \Delta\beta=10^{-2},
+\]
+using the solution at $\beta_n$ as the predictor for the Newton
+correction at $\beta_{n+1}$. This continuation procedure is appropriate
+as long as $\beta$ remains a regular local parameter. It is not designed
+to cross folds; a pseudo-arclength formulation would be required near a
+singular shooting Jacobian; see \cite{AllgowerGeorg1990,Seydel2010}.
+
+The numerical example uses
+\begin{equation}
+\label{eq:numerical-parameters}
+ \alpha=2,
+ \qquad
+ \delta=0.35,
+ \qquad
+ \omega=1,
+ \qquad
+ T=2\pi.
+\end{equation}
+The three branches were continued over
+\begin{equation}
+\label{eq:numerical-beta-range}
+ 0\leq\beta\leq0.40.
+\end{equation}
+This interval is a computational continuation range. It is not asserted
+to be an analytic persistence interval and is not identified with the
+geometric quantity $M_{\alpha}$.
+
+Figure~\ref{fig:numerical-branches} displays the minimum and maximum of
+each computed solution over one period. The continuation preserves three
+disjoint response families throughout the interval
+\eqref{eq:numerical-beta-range}.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.88\linewidth]
+{figures/branch_continuation.pdf}
+\caption{Minimum and maximum over one period along the three branches
+continued from the constant states at $\beta=0$.}
+\label{fig:numerical-branches}
+\end{figure}
+
+%------------------------------------------------------------
+\subsection{Comparison with the local asymptotic expansions}
+\label{subsec:numerical-asymptotics}
+%------------------------------------------------------------
+
+Let $z_j$ and $w_j$ be the first- and second-order terms in
+Theorem~\ref{thm:harmonic-second-order-expansion}, and let $\chi_0$ be
+the cubic correction in
+Theorem~\ref{thm:central-cubic-expansion}. We define
+\begin{align}
+ E_{+,1}(\beta)
+ &:={}
+ \left\|
+ u_+(\cdot;\beta)
+ -\xi_+
+ -\beta z_+
+ \right\|_{\infty},
+ \label{eq:numerical-error-plus-one}
+ \\
+ E_{+,2}(\beta)
+ &:={}
+ \left\|
+ u_+(\cdot;\beta)
+ -\xi_+
+ -\beta z_+
+ -\beta^2w_+
+ \right\|_{\infty},
+ \label{eq:numerical-error-plus-two}
+ \\
+ E_{0,1}(\beta)
+ &:={}
+ \left\|
+ u_0(\cdot;\beta)
+ -\beta z_0
+ \right\|_{\infty},
+ \label{eq:numerical-error-zero-one}
+ \\
+ E_{0,3}(\beta)
+ &:={}
+ \left\|
+ u_0(\cdot;\beta)
+ -\beta z_0
+ -\beta^3\chi_0
+ \right\|_{\infty}.
+ \label{eq:numerical-error-zero-three}
+\end{align}
+The negative exterior branch gives the same errors, up to the numerical
+integration tolerance, by the symmetry established in
+Corollary~\ref{cor:smooth-harmonic-branches}.
+
+\begin{table}[htbp]
+\centering
+\caption{Uniform errors of the asymptotic approximations.}
+\label{tab:numerical-asymptotic-errors}
+\small
+\setlength{\tabcolsep}{8pt}
+\begin{tabular}{ccccc}
+\hline
+$\beta$
+& $E_{+,1}(\beta)$
+& $E_{+,2}(\beta)$
+& $E_{0,1}(\beta)$
+& $E_{0,3}(\beta)$
+\\
+\hline
+$0.02$
+& $3.0402\times10^{-4}$
+& $2.2270\times10^{-5}$
+& $3.7554\times10^{-7}$
+& $4.6950\times10^{-11}$
+\\
+$0.05$
+& $2.0709\times10^{-3}$
+& $3.4984\times10^{-4}$
+& $5.8695\times10^{-6}$
+& $1.7461\times10^{-9}$
+\\
+$0.10$
+& $9.4967\times10^{-3}$
+& $2.8190\times10^{-3}$
+& $4.6997\times10^{-5}$
+& $5.5717\times10^{-8}$
+\\
+\hline
+\end{tabular}
+\end{table}
+
+The values in Table~\ref{tab:numerical-asymptotic-errors} are consistent
+with
+\[
+ E_{+,1}(\beta)=O(\beta^2),
+ \qquad
+ E_{+,2}(\beta)=O(\beta^3),
+\]
+and
+\[
+ E_{0,1}(\beta)=O(\beta^3),
+ \qquad
+ E_{0,3}(\beta)=O(\beta^5).
+\]
+The absence of quadratic and quartic corrections on the central branch
+is therefore visible at the numerical level.
+
+%------------------------------------------------------------
+\subsection{Representative profiles and Floquet spectra}
+\label{subsec:numerical-representative-case}
+%------------------------------------------------------------
+
+We now fix
+\begin{equation}
+\label{eq:numerical-representative-beta}
+ \beta=0.20.
+\end{equation}
+The three periodic profiles obtained by continuation are shown in
+Figure~\ref{fig:numerical-profiles}. Their initial data, ranges, and
+Floquet multipliers are reported in
+Table~\ref{tab:numerical-floquet-data}.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.88\linewidth]
+{figures/representative_orbits.pdf}
+\caption{Three periodic responses at $\beta=0.20$ for the parameter set
+\eqref{eq:numerical-parameters}.}
+\label{fig:numerical-profiles}
+\end{figure}
+
+\begin{table}[htbp]
+\centering
+\caption{Shooting and Floquet data at $\beta=0.20$.}
+\label{tab:numerical-floquet-data}
+\small
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{lcccl}
+\hline
+Branch
+& $(u(0),u'(0))$
+& $[\min u,\max u]$
+& Floquet multipliers
+& Classification
+\\
+\hline
+$u_-$
+& $(-1.982454,\,0.366600)$
+& $[-2.164979,-1.262030]$
+& $0.146329\pm0.299147\,\mathrm{i}$
+& exponentially stable
+\\
+$u_0$
+& $(-0.097381,\,0.017143)$
+& $[-0.098876,0.098876]$
+& $187.535111,\;5.91363\times10^{-4}$
+& hyperbolically unstable
+\\
+$u_+$
+& $(1.429238,\,0.347437)$
+& $[1.262030,2.164979]$
+& $0.146329\pm0.299147\,\mathrm{i}$
+& exponentially stable
+\\
+\hline
+\end{tabular}
+\end{table}
+
+The modulus of each exterior multiplier is
+\[
+ 0.333018<1,
+\]
+whereas the central branch has one multiplier greater than one and one
+smaller than one. This agrees with
+Theorem~\ref{thm:stability-persistence}. The exterior spectra coincide,
+as predicted by Proposition~\ref{prop:exterior-floquet-symmetry}.
+
+For all three solutions,
+\[
+ e^{-\delta T}
+ =
+ e^{-0.35(2\pi)}
+ =
+ 0.110901278364\ldots.
+\]
+The computed determinants of the monodromy matrices differ from this
+value by
+\[
+ 3.66\times10^{-12},
+ \qquad
+ 1.24\times10^{-11},
+ \qquad
+ 3.86\times10^{-12}
+\]
+for $u_-$, $u_0$, and $u_+$, respectively. The corresponding shooting
+residuals are
+\[
+ 2.00\times10^{-15},
+ \qquad
+ 1.89\times10^{-13},
+ \qquad
+ 2.03\times10^{-12}.
+\]
+
+The half-period identities were also evaluated on a uniform grid of
+$4096$ points. The resulting defects were
+\begin{equation}
+\label{eq:numerical-symmetry-defects}
+ \left\|
+ u_-(t;\beta)
+ +u_+\left(t+\frac{T}{2};\beta\right)
+ \right\|_{\infty}
+ =1.50\times10^{-9}
+\end{equation}
+and
+\begin{equation}
+\label{eq:numerical-central-symmetry-defect}
+ \left\|
+ u_0(t;\beta)
+ +u_0\left(t+\frac{T}{2};\beta\right)
+ \right\|_{\infty}
+ =8.51\times10^{-11}.
+\end{equation}
+
+Figure~\ref{fig:numerical-floquet-continuation} shows the spectral radius
+of the three monodromy matrices along the computed continuation
+interval. The exterior branches remain inside the unit disk, while the
+central branch remains hyperbolically unstable over the sampled
+parameter range.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.88\linewidth]
+{figures/floquet_moduli.pdf}
+\caption{Spectral radius of the monodromy matrix along the computed
+branches. The dashed line marks the unit-modulus threshold.}
+\label{fig:numerical-floquet-continuation}
+\end{figure}
+
+%------------------------------------------------------------
+\subsection{Independent finite-difference check}
+\label{subsec:numerical-finite-difference}
+%------------------------------------------------------------
+
+As an independent discretization, the periodic boundary value problem
+was approximated on the uniform grid
+\[
+ t_k=\frac{kT}{N},
+ \qquad
+ k=0,\ldots,N-1,
+\]
+using centered periodic differences,
+\begin{equation}
+\label{eq:numerical-centered-differences}
+ (D_1U)_k
+ =
+ \frac{U_{k+1}-U_{k-1}}{2\Delta t},
+ \qquad
+ (D_2U)_k
+ =
+ \frac{U_{k+1}-2U_k+U_{k-1}}{\Delta t^2},
+\end{equation}
+with indices interpreted modulo $N$. The nonlinear system
+\begin{equation}
+\label{eq:numerical-discrete-system}
+ D_2U
+ +\delta D_1U
+ +f_{\alpha}(U)
+ -\beta H
+ =0,
+ \qquad
+ H_k=\cos(\omega t_k),
+\end{equation}
+was solved by sparse Newton iteration with the exact discrete Jacobian.
+The shooting profiles were used only as initial approximations for this
+independent algebraic solve; see \cite{AscherMattheijRussell1995}.
+
+\begin{table}[htbp]
+\centering
+\caption{Amplitude intervals from the centered finite-difference
+scheme at $\beta=0.20$.}
+\label{tab:numerical-mesh-intervals}
+\small
+\begin{tabular}{cccc}
+\hline
+$N$ & $u_N^-$ & $u_N^0$ & $u_N^+$
+\\
+\hline
+$128$
+& $[-2.165131,-1.261909]$
+& $[-0.098862,0.098862]$
+& $[1.261909,2.165131]$
+\\
+$256$
+& $[-2.165013,-1.261971]$
+& $[-0.098879,0.098879]$
+& $[1.261971,2.165013]$
+\\
+$512$
+& $[-2.164989,-1.262016]$
+& $[-0.098877,0.098877]$
+& $[1.262016,2.164989]$
+\\
+\hline
+\end{tabular}
+\end{table}
+
+For nested grids, define
+\begin{equation}
+\label{eq:numerical-nested-grid-error}
+ \Delta_{N,2N}(U)
+ :=
+ \max_{0\leq k<N}
+ |U_N(t_k)-U_{2N}(t_{2k})|.
+\end{equation}
+The computed values are
+\begin{table}[htbp]
+\centering
+\caption{Nested-grid discrepancies for the three branches.}
+\label{tab:numerical-mesh-discrepancies}
+\small
+\begin{tabular}{lccc}
+\hline
+Transition
+& $\Delta_{N,2N}(u_-)$
+& $\Delta_{N,2N}(u_0)$
+& $\Delta_{N,2N}(u_+)$
+\\
+\hline
+$128\to256$
+& $1.8486\times10^{-4}$
+& $9.0429\times10^{-6}$
+& $1.8486\times10^{-4}$
+\\
+$256\to512$
+& $4.6206\times10^{-5}$
+& $2.2607\times10^{-6}$
+& $4.6206\times10^{-5}$
+\\
+\hline
+\end{tabular}
+\end{table}
+
+The discrepancies decrease by a factor close to four after mesh
+doubling, consistently with the second-order centered discretization.
+The discrete residuals remained below $8.6\times10^{-11}$ for all
+reported meshes and branches.
+
+%------------------------------------------------------------
+\subsection{Scope of the computations}
+\label{subsec:numerical-scope}
+%------------------------------------------------------------
+
+The computations establish the following numerical facts for the
+parameter set \eqref{eq:numerical-parameters}: the three branches can be
+continued from $\beta=0$ to $\beta=0.40$ by regular parameter
+continuation; the local asymptotic expansions display the predicted
+orders; the exterior branches remain exponentially stable and share the
+same Floquet spectrum; the central branch remains hyperbolically
+unstable; and the periodic profiles are stable under mesh refinement.
+
+These conclusions concern the computed branches and parameter grid. No
+claim is made that $\beta=0.40$ is a maximal continuation value, a
+bifurcation threshold, or an analytically certified coexistence bound.
+The residual, Liouville, symmetry, and refinement tests are
+reproducibility diagnostics rather than interval-certified existence
+proofs.
+
+\FloatBarrier
